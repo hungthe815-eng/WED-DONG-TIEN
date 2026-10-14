@@ -72,6 +72,7 @@ td.r,th.r{text-align:right}.z{color:var(--mu)}
 <section class="sec"><h2>Phân bổ theo ngân hàng</h2><div class="lab">Mỗi đoạn là một ngân hàng, độ dài theo số tiền.</div><div class="strip" id="strip"></div><div class="chips" id="chips"></div>
 <div class="key"><i></i>Tài khoản thanh toán<b></b>Tiền gửi / Saving</div></section>
 <section class="sec"><h2>Biến động lớn nhất</h2><div class="lab" id="mvlab"></div><div class="mv"><div><h3>Tăng nhiều nhất</h3><div id="mvUp"></div></div><div><h3>Giảm nhiều nhất</h3><div id="mvDn"></div></div></div></section>
+<section class="sec"><h2>Lịch đáo hạn tiền gửi</h2><div class="lab" id="dueLab"></div><div class="stats" id="dueSum" style="grid-template-columns:repeat(auto-fit,minmax(170px,1fr))"></div><div class="acc" id="dueList" style="padding:12px 0 0;max-height:420px;overflow:auto"></div></section>
 <section class="sec"><h2>Từng ngân hàng</h2><div class="lab">Bấm vào một ngân hàng để xem các tài khoản.</div>
 <div class="tools"><input type="search" id="q" placeholder="Tìm số tài khoản, tên, ngân hàng…"><select id="srt"><option value="t">Sắp xếp: số tiền</option><option value="d">Sắp xếp: biến động</option><option value="n">Sắp xếp: tên</option></select><label><input type="checkbox" id="nz"> Ẩn tài khoản số dư 0</label></div>
 <div id="list"></div></section>
@@ -83,6 +84,7 @@ addEventListener("unhandledrejection",e=>{const x=$("err");x.hidden=false;x.text
 const F=n=>n.toLocaleString("vi-VN"),T=n=>(n/1e9).toLocaleString("vi-VN",{maximumFractionDigits:2}),S=n=>(n>0?"+":"")+T(n);
 const PAL=["#1d5fd1","#0d9488","#d98a06","#7c3aed","#d6336c","#2f9e44","#0891b2","#9333ea","#64748b"];
 const isSv=r=>/saving/i.test(r.type),isVnd=r=>!/USD|EUR/i.test(r.name||"");
+const RW=j=>(j.rows.deps=j.deposits||[],j.rows);
 let SEL=null,DAYS={},ENC={},PW="",SRC="",LOCAL=null,SIG="";
 try{PW=sessionStorage.getItem("pw")||""}catch(e){}
 const ymd=d=>d.replaceAll("-",""),unb64=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
@@ -91,7 +93,7 @@ async function deriveKey(pw){const te=new TextEncoder(),km=await crypto.subtle.i
  return crypto.subtle.deriveKey({name:"PBKDF2",salt:te.encode("so-du-ngan-hang-v1"),iterations:600000,hash:"SHA-256"},km,{name:"AES-GCM",length:256},false,["decrypt"])}
 async function dec(o,key){return JSON.parse(new TextDecoder().decode(await crypto.subtle.decrypt({name:"AES-GCM",iv:unb64(o.iv)},key,unb64(o.data))))}
 async function decryptAll(pw){const key=await deriveKey(pw),out={};
- for(const d of Object.keys(ENC)){try{const j=await dec(ENC[d],key);out[j.date||d]=j.rows}catch(e){}}
+ for(const d of Object.keys(ENC)){try{const j=await dec(ENC[d],key);out[j.date||d]=RW(j)}catch(e){}}
  if(!Object.keys(out).length)throw 0;return out}
 async function finish(plain){
  let days={...plain};
@@ -108,7 +110,7 @@ const kvSet=async(k,v)=>{const db=await idb();return new Promise((a,b)=>{const t
 async function readFolder(dir){const enc={},plain={},sig=[];
  for await(const [name,h] of dir.entries()){if(h.kind!=="file")continue;const m=name.match(/^balance_(\d{8}).*\.json$/i);if(!m)continue;
   try{const f=await h.getFile();sig.push(name+f.size+f.lastModified);const j=JSON.parse(await f.text()),d=m[1].replace(/(\d{4})(\d{2})(\d{2})/,"$1-$2-$3");
-   if(j.rows)plain[j.date||d]=j.rows;else if(j.iv&&j.data)enc[d]=j}catch(e){}}
+   if(j.rows)plain[j.date||d]=RW(j);else if(j.iv&&j.data)enc[d]=j}catch(e){}}
  return{enc,plain,sig:sig.sort().join("|")}}
 async function loadLocal(dir){const r=await readFolder(dir);SIG=r.sig;ENC=r.enc;SRC="thư mục trên máy: "+dir.name;
  if(!Object.keys(r.enc).length&&!Object.keys(r.plain).length){$("meta").textContent="Thư mục "+dir.name+" chưa có file balance_YYYYMMDD.json";init();return}
@@ -130,7 +132,7 @@ async function loadRemote(){const plain={},info=[],owner=location.hostname.split
   for(const u of [f.url,DIR+"/"+f.name]){if(!u)continue;try{j=await getJson(u);break}catch(e){}}
   if(!j){if(!f.probe)info.push(f.name+": không tải được");return}
   const d=f.name.match(/\d{8}/)[0].replace(/(\d{4})(\d{2})(\d{2})/,"$1-$2-$3");
-  if(j.rows){plain[j.date||d]=j.rows;ok++}else if(j.iv&&j.data){ENC[d]=j;ok++}else info.push(f.name+": nội dung không đúng định dạng (cần date và rows)")}));
+  if(j.rows){plain[j.date||d]=RW(j);ok++}else if(j.iv&&j.data){ENC[d]=j;ok++}else info.push(f.name+": nội dung không đúng định dạng (cần date và rows)")}));
  if(!ok){const e=$("err");
   e.innerHTML="Không đọc được file dữ liệu trong thư mục <b>"+DIR+"</b> của <code>"+owner+"/"+repo+"</code>."+(info.length?"<br>Chi tiết: "+info.join("; "):"")+"<br>Kiểm tra repo là <b>Public</b>, file đúng tên <b>balance_YYYYMMDD.json</b>, rồi bấm Ctrl+F5.";
   e.hidden=false;init();return}
@@ -166,6 +168,7 @@ function render(){
  $("mvlab").textContent=prev?"Số dư ngày "+cur+" so với ngày "+prev+", theo từng tài khoản.":"Cần ít nhất 2 ngày dữ liệu để so sánh.";
  $("mvUp").innerHTML=mv.filter(x=>x.d>0).sort((a,b)=>b.d-a.d).slice(0,5).map(mrow).join("")||'<div class="lab">Không có</div>';
  $("mvDn").innerHTML=mv.filter(x=>x.d<0).sort((a,b)=>a.d-b.d).slice(0,5).map(mrow).join("")||'<div class="lab">Không có</div>';
+ due(rows,cur);
  const srt=$("srt").value,dd=x=>pg&&pg[x.b]?x.t-pg[x.b].ca-pg[x.b].sv:0,tb=[...banks].sort(srt==="n"?(a,b)=>a.b.localeCompare(b.b):srt==="d"?(a,b)=>Math.abs(dd(b))-Math.abs(dd(a)):(a,b)=>b.t-a.t);
  const q=$("q").value.trim().toLowerCase(),nz=$("nz").checked;let h="";
  tb.forEach(x=>{const rs=x.rows.filter(r=>(!nz||r.balance>0)&&(!q||(r.bank+r.code+r.name).toLowerCase().includes(q)));if(!rs.length)return;
@@ -174,6 +177,15 @@ function render(){
   rs.map(r=>`<tr><td>${r.code}</td><td>${r.name}</td><td class="tg">${isSv(r)?"Tiền gửi":"Thanh toán"}</td><td class="r ${r.balance?"":"z"}">${F(r.balance)}</td></tr>`).join("")+`</tbody></table></div></details>`});
  $("list").innerHTML=h||'<p class="lab">Không có tài khoản nào khớp.</p>';
  const fx=rows.filter(r=>!isVnd(r)&&r.balance>0).length;$("note").textContent=fx?`Có ${fx} tài khoản ngoại tệ có số dư, chưa cộng vào tổng VND.`:""}
+function due(rows,cur){
+ const dp=(rows.deps||[]).filter(x=>x.balance>0),L=$("dueLab");
+ if(!dp.length){L.textContent="Chưa có dữ liệu ngày đáo hạn. Hãy tải số dư bằng extension phiên bản 3.2 trở lên.";$("dueSum").innerHTML=$("dueList").innerHTML="";return}
+ const ref=Date.parse(cur),dl=x=>x.maturity?Math.round((Date.parse(x.maturity)-ref)/864e5):null;
+ const W=[["Trong 7 ngày",x=>x<=7],["8–30 ngày",x=>x>7&&x<=30],["31–90 ngày",x=>x>30&&x<=90],["Trên 90 ngày",x=>x>90]];
+ const vnd=dp.filter(x=>x.ccy==="VND"),dated=vnd.filter(x=>dl(x)!=null),und=vnd.filter(x=>dl(x)==null);
+ L.textContent="Tiền gửi có kỳ hạn tính từ ngày "+cur+". "+dated.length+" khoản có ngày đáo hạn"+(und.length?", "+und.length+" khoản ("+T(und.reduce((s,x)=>s+x.balance,0))+" tỷ) chưa có ngày nên không xếp vào lịch (ngân hàng không cung cấp).":".");
+ $("dueSum").innerHTML=W.map(([n,f])=>{const a=dated.filter(x=>f(dl(x)));return `<div><span class="lab">${n}</span><b>${T(a.reduce((s,x)=>s+x.balance,0))} tỷ</b><span class="lab">${a.length} khoản</span></div>`}).join("");
+ $("dueList").innerHTML=`<table><thead><tr><th>Ngày đáo hạn</th><th>Còn lại</th><th>Ngân hàng</th><th>Số tài khoản</th><th>Kỳ hạn</th><th class="r">Số tiền</th></tr></thead><tbody>`+dated.sort((a,b)=>a.maturity.localeCompare(b.maturity)).map(x=>{const n=dl(x);return `<tr><td>${x.maturity.split("-").reverse().join("/")}</td><td class="${n<0?"dn":""}">${n<0?"Quá hạn "+(-n)+" ngày":n===0?"Hôm nay":n+" ngày"}</td><td>${x.bank}</td><td>${x.acct}</td><td class="tg">${x.term||""}</td><td class="r">${F(x.balance)}</td></tr>`}).join("")+`</tbody></table>`}
 function trend(ds,cur){
  if(ds.length<2){$("trlab").textContent="Cần ít nhất 2 ngày dữ liệu để vẽ biến động. Mỗi ngày bỏ thêm một file balance_YYYYMMDD.json vào thư mục DATA.";$("trend").innerHTML="";return}
  $("trlab").textContent=(SEL?"Riêng "+SEL+" (bấm lại tên ngân hàng ở dải màu để quay về tổng)":"Tổng tiền cuối mỗi ngày. Bấm tên một ngân hàng ở dải màu để xem riêng")+", đơn vị tỷ đồng.";
@@ -191,7 +203,7 @@ $("csv").onclick=()=>{const ds=Object.keys(DAYS).sort(),cur=$("dt").value||ds[ds
 $("q").oninput=render;$("nz").onchange=render;
 $("f").onchange=async e=>{let pw="";for(const file of e.target.files){try{let j=JSON.parse(await file.text());
  if(j.iv&&j.data){pw=pw||PW||prompt("Nhập mật khẩu:")||"";j=await dec(j,await deriveKey(pw))}
- if(j.date&&j.rows)DAYS[j.date]=j.rows}catch(x){alert("Không đọc được "+file.name)}}
+ if(j.date&&j.rows)DAYS[j.date]=RW(j)}catch(x){alert("Không đọc được "+file.name)}}
  $("err").hidden=true;SRC="file bạn chọn";init();e.target.value=""};
 boot();
 </script></body></html>

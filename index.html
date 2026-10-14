@@ -1,124 +1,165 @@
-<!DOCTYPE html><html lang="vi"><head><meta charset="utf-8"><title>Báo cáo số dư ngân hàng</title>
+<!DOCTYPE html><html lang="vi"><head><meta charset="utf-8"><title>Số dư ngân hàng</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#f6f7f9;--card:#fff;--tx:#1a1d23;--mu:#6b7280;--bd:#e5e7eb;--a:#2563eb;--b:#f59e0b;--up:#059669;--dn:#dc2626}
-@media (prefers-color-scheme:dark){:root{--bg:#0f1217;--card:#181c23;--tx:#e8eaed;--mu:#9aa3b2;--bd:#2a303a;--a:#60a5fa;--b:#fbbf24;--up:#34d399;--dn:#f87171;color-scheme:dark}}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
-.w{max-width:1000px;margin:0 auto;padding:20px 16px 40px}
-header{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;margin-bottom:18px}
-h1{font-size:20px;margin:0}h2{font-size:16px;margin:0 0 12px}.sm{font-size:12px;color:var(--mu)}
-select,input[type=search],.btn{padding:8px 12px;border:1px solid var(--bd);border-radius:8px;background:var(--card);color:var(--tx);font:inherit;font-size:14px}
-.btn{cursor:pointer}
-.kp{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:18px}
-.c{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:14px 16px;margin-bottom:18px}.kp .c{margin:0}
-.k{color:var(--mu);font-size:13px}.v{font-size:24px;font-weight:650}
-.up{color:var(--up)}.dn{color:var(--dn)}
-.row{display:grid;grid-template-columns:60px 1fr 150px;gap:10px;align-items:center;padding:6px 0}
-.row .n{text-align:right;font-size:14px;font-variant-numeric:tabular-nums}
-.bar{display:flex;height:20px;border-radius:6px;overflow:hidden;background:var(--bd)}.bar i{display:block;height:100%}
-.lg{display:flex;gap:16px;font-size:12px;color:var(--mu);margin-bottom:6px}
-.lg span:before{content:"";display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;background:var(--a)}.lg span+span:before{background:var(--b)}
-details{border-top:1px solid var(--bd)}summary{cursor:pointer;display:grid;grid-template-columns:60px 1fr auto;gap:10px;padding:10px 0;list-style:none}
-summary::-webkit-details-marker{display:none}
-.tb{overflow-x:auto;padding-bottom:8px}table{border-collapse:collapse;width:100%;font-size:13px;min-width:520px}
-th,td{padding:6px 8px;text-align:left;border-bottom:1px solid var(--bd)}th{color:var(--mu);font-weight:500}.r{text-align:right;font-variant-numeric:tabular-nums}
-.err{background:var(--card);border:1px solid var(--dn);border-radius:12px;padding:14px 16px;margin-bottom:18px;display:none}
-svg text{fill:var(--mu);font-size:11px}
+:root{--bg:#f4f6f9;--sf:#fff;--ink:#0f1b2d;--mu:#667085;--ln:#dde3ea;--up:#0f8a5f;--dn:#c8372d;--ac:#0d6b73}
+@media (prefers-color-scheme:dark){:root{--bg:#0b1119;--sf:#131b26;--ink:#e9eef5;--mu:#8d9bb0;--ln:#243040;--up:#3ccf91;--dn:#ff7b70;--ac:#4cc3cc;color-scheme:dark}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 "Be Vietnam Pro",system-ui,-apple-system,"Segoe UI",sans-serif;font-variant-numeric:tabular-nums}
+.w{max-width:1040px;margin:0 auto;padding:22px 18px 56px}
+.top{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;padding-bottom:18px;border-bottom:1px solid var(--ln)}
+.top h1{font-size:15px;font-weight:600;margin:0;letter-spacing:.01em}.mt{font-size:13px;color:var(--mu)}
+.act{display:flex;gap:8px;flex-wrap:wrap}
+select,.btn,input[type=search]{font:inherit;font-size:13px;padding:7px 12px;border:1px solid var(--ln);border-radius:6px;background:var(--sf);color:var(--ink);cursor:pointer}
+.btn:hover,select:hover{border-color:var(--ac)}
+:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+.err{margin:16px 0;padding:12px 14px;border:1px solid var(--dn);border-radius:6px;background:var(--sf);font-size:14px}
+.hero{padding:34px 0 8px}
+.lab{font-size:13px;color:var(--mu)}
+.big{font-size:clamp(38px,8vw,68px);font-weight:700;line-height:1.05;letter-spacing:-.025em;margin:4px 0 6px}
+.big small{font-size:.38em;font-weight:500;color:var(--mu);letter-spacing:0;margin-left:8px}
+.dl{font-size:14px;color:var(--mu)}.up{color:var(--up)}.dn{color:var(--dn)}
+.strip{display:flex;gap:3px;height:56px;margin:26px 0 12px}
+.seg{display:flex;flex-direction:column;min-width:3px;border-radius:3px;overflow:hidden}
+.seg i{background:var(--c)}
+.seg b{background:repeating-linear-gradient(135deg,var(--c) 0 2px,color-mix(in srgb,var(--c) 22%,transparent) 2px 6px)}
+.chips{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:13px}
+.chips span:before{content:"";display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:6px;background:var(--c)}
+.chips em{font-style:normal;color:var(--mu);margin-left:4px}
+.key{font-size:12px;color:var(--mu);margin-top:10px}
+.key i,.key b{display:inline-block;width:18px;height:9px;vertical-align:middle;border-radius:2px;margin-right:5px}
+.key i{background:var(--mu)}.key b{margin-left:14px;background:repeating-linear-gradient(135deg,var(--mu) 0 2px,transparent 2px 6px)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));margin-top:26px;border-top:1px solid var(--ln)}
+.stats div{padding:14px 16px 4px 0}.stats b{display:block;font-size:20px;font-weight:600}
+h2{font-size:15px;font-weight:600;margin:0 0 4px}
+.sec{margin-top:42px}.sec>.lab{margin-bottom:14px}
+.tools{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-bottom:6px}
+.tools input[type=search]{flex:1;min-width:200px;cursor:text}
+.tools label{font-size:13px;color:var(--mu);display:flex;gap:6px;align-items:center;cursor:pointer}
+.bk{border-top:1px solid var(--ln)}.bk:last-child{border-bottom:1px solid var(--ln)}
+.bk summary{list-style:none;cursor:pointer;display:grid;grid-template-columns:minmax(120px,1.3fr) 1fr 1fr 1.1fr 90px;gap:10px;align-items:center;padding:14px 4px}
+.bk summary::-webkit-details-marker{display:none}.bk summary:hover{background:color-mix(in srgb,var(--ink) 4%,transparent)}
+.nm{font-weight:600}.nm:before{content:"";display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:9px;background:var(--c)}
+.r{text-align:right}.tt{font-weight:600}
+.hd{font-size:12px;color:var(--mu);font-weight:400}
+.acc{overflow-x:auto;padding:0 4px 14px 23px}
+table{border-collapse:collapse;width:100%;font-size:13px;min-width:480px}
+th,td{padding:7px 8px;text-align:left;border-bottom:1px solid var(--ln)}th{color:var(--mu);font-weight:500}
+td.r,th.r{text-align:right}.z{color:var(--mu)}
+.tg{font-size:12px;color:var(--mu)}
+#note{font-size:12px;color:var(--mu);margin-top:18px}
+@media(max-width:640px){.bk summary{grid-template-columns:1fr auto}.bk summary .h{display:none}}
+@media(prefers-reduced-motion:no-preference){.seg{transition:flex .4s}}
 </style></head><body><div class="w">
-<header><div><h1>Báo cáo số dư ngân hàng</h1><div class="sm" id="meta">Đang tải...</div></div>
-<div style="display:flex;gap:8px;flex-wrap:wrap"><select id="dt"></select>
-<input type="file" id="f" accept=".json" multiple hidden><button class="btn" onclick="f.click()">Nạp file JSON thủ công</button></div></header>
-<div class="err" id="err"></div>
-<div class="kp" id="kp"></div>
-<div class="c"><h2>Tổng tiền theo ngày</h2><div id="trend"></div></div>
-<div class="c"><h2>Phân bổ theo ngân hàng</h2><div class="lg"><span>Thanh toán</span><span>Tiền gửi / Saving</span></div><div id="bars"></div></div>
-<div class="c"><h2>Chi tiết từng ngân hàng</h2><input type="search" id="q" placeholder="Tìm số tài khoản, tên, ngân hàng..." style="width:100%;margin-bottom:8px"><div id="list"></div></div>
-<p class="sm" id="note"></p></div>
+<header class="top"><div><h1>Số dư ngân hàng</h1><div class="mt" id="meta">Đang tải…</div></div>
+<div class="act"><select id="dt" aria-label="Chọn ngày"></select><button class="btn" id="pick" hidden>Chọn thư mục DATA</button><button class="btn" id="grant" hidden>Cho phép đọc thư mục</button>
+<label class="btn">Mở file JSON<input type="file" id="f" accept=".json" multiple hidden></label></div></header>
+<div class="err" id="err" hidden></div>
+<section class="hero"><div class="lab">Tổng tiền tại các ngân hàng (VND)</div><div class="big" id="big">–</div><div class="dl" id="dl"></div>
+<div class="strip" id="strip"></div><div class="chips" id="chips"></div>
+<div class="key"><i></i>Tài khoản thanh toán<b></b>Tiền gửi / Saving</div>
+<div class="stats" id="stats"></div></section>
+<section class="sec"><h2>Tổng tiền theo ngày</h2><div class="lab" id="trlab"></div><div id="trend"></div></section>
+<section class="sec"><h2>Từng ngân hàng</h2><div class="lab">Bấm vào một ngân hàng để xem các tài khoản.</div>
+<div class="tools"><input type="search" id="q" placeholder="Tìm số tài khoản, tên, ngân hàng…"><label><input type="checkbox" id="nz"> Ẩn tài khoản số dư 0</label></div>
+<div id="list"></div></section>
+<p id="note"></p></div>
 <script>
-const $=id=>document.getElementById(id);
-const F=n=>n.toLocaleString("vi-VN"),T=n=>(n/1e9).toLocaleString("vi-VN",{maximumFractionDigits:2})+" tỷ";
-const DT=n=>(n>0?"+":"")+T(n);
+const DIR="DATA",$=id=>document.getElementById(id);
+const F=n=>n.toLocaleString("vi-VN"),T=n=>(n/1e9).toLocaleString("vi-VN",{maximumFractionDigits:2}),S=n=>(n>0?"+":"")+T(n);
+const PAL=["#1d5fd1","#0d9488","#d98a06","#7c3aed","#d6336c","#2f9e44","#0891b2","#9333ea","#64748b"];
 const isSv=r=>/saving/i.test(r.type),isVnd=r=>!/USD|EUR/i.test(r.name||"");
-let DAYS={}; // date -> rows
-const ymd=d=>d.replaceAll("-","");
+let DAYS={},ENC={},PW="",SRC="",LOCAL=null,SIG="";
+try{PW=sessionStorage.getItem("pw")||""}catch(e){}
+const ymd=d=>d.replaceAll("-",""),unb64=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
 async function getJson(u){const r=await fetch(u,{cache:"no-store"});if(!r.ok)throw 0;return r.json()}
-const unb64=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
-let ENC={};
-async function deriveKey(pw){const te=new TextEncoder();
- const km=await crypto.subtle.importKey("raw",te.encode(pw),"PBKDF2",false,["deriveKey"]);
+async function deriveKey(pw){const te=new TextEncoder(),km=await crypto.subtle.importKey("raw",te.encode(pw),"PBKDF2",false,["deriveKey"]);
  return crypto.subtle.deriveKey({name:"PBKDF2",salt:te.encode("so-du-ngan-hang-v1"),iterations:600000,hash:"SHA-256"},km,{name:"AES-GCM",length:256},false,["decrypt"])}
-async function decryptAll(pw){const key=await deriveKey(pw),out={};let bad=0;
- for(const d of Object.keys(ENC)){try{const o=ENC[d];
-  const pt=await crypto.subtle.decrypt({name:"AES-GCM",iv:unb64(o.iv)},key,unb64(o.data));
-  const j=JSON.parse(new TextDecoder().decode(pt));out[j.date||d]=j.rows}catch(e){bad++}}
- if(!Object.keys(out).length)throw new Error("wrong password");
- if(bad)console.warn(bad+" file không giải mã được bằng mật khẩu này, đã bỏ qua");
- return out}
-async function load(){
- let dates=[];
- try{dates=await getJson("data/index.json")}catch(e){}
- {const t=new Date(),set=new Set(dates);for(let i=0;i<90;i++){const d=new Date(t-i*864e5);set.add(d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"))}dates=[...set]}
- await Promise.all(dates.map(async d=>{try{ENC[d]=await getJson("data/balance_"+ymd(d)+".enc.json")}catch(e){}}));
- if(!Object.keys(ENC).length){const e=$("err");
-  const base=new URL("data/",location.href).href;
-  e.innerHTML=location.protocol==="file:"
-   ?"Bạn đang mở file trực tiếp từ máy (<b>file://</b>) nên trình duyệt chặn đọc thư mục data. Hãy mở bằng link GitHub Pages (https://...github.io/...)."
-   :"Không tìm thấy file dữ liệu nào ở <code>"+base+"</code>.<br>Kiểm tra: (1) trên GitHub có thư mục <b>data</b> (viết thường) chứa file <b>balance_YYYYMMDD.enc.json</b>; (2) mở thử link <code>"+base+"balance_"+ymd(dates[dates.length-1]).slice(0,0)+"YYYYMMDD.enc.json</code> (thay bằng ngày thật) xem có hiện nội dung không; (3) chờ 1-2 phút sau khi đẩy file. Hoặc bấm <b>Nạp file JSON thủ công</b> để xem ngay.";
-  e.style.display="block";
-  init();return}
- let pw="";try{pw=sessionStorage.getItem("pw")||""}catch(e){}
- for(;;){
-  if(!pw)pw=prompt("Nhập mật khẩu để xem báo cáo:")||"";
-  if(!pw){$("meta").textContent="Cần mật khẩu để xem dữ liệu. Tải lại trang để nhập lại.";return}
-  try{$("meta").textContent="Đang giải mã...";DAYS=await decryptAll(pw);try{sessionStorage.setItem("pw",pw)}catch(e){}break}
-  catch(e){try{sessionStorage.removeItem("pw")}catch(x){}pw="";alert("Sai mật khẩu hoặc file bị lỗi, thử lại.")}
- }
- init();
-}
-function sums(rows){const g={};rows.filter(isVnd).forEach(r=>{const x=g[r.bank]=g[r.bank]||{b:r.bank,ca:0,sv:0};x[isSv(r)?"sv":"ca"]+=r.balance});return g}
-function init(){
- const ds=Object.keys(DAYS).sort().reverse();
- $("dt").innerHTML=ds.map(d=>`<option>${d}</option>`).join("");$("dt").style.display=ds.length?"":"none";
- render();
-}
+async function dec(o,key){return JSON.parse(new TextDecoder().decode(await crypto.subtle.decrypt({name:"AES-GCM",iv:unb64(o.iv)},key,unb64(o.data))))}
+async function decryptAll(pw){const key=await deriveKey(pw),out={};
+ for(const d of Object.keys(ENC)){try{const j=await dec(ENC[d],key);out[j.date||d]=j.rows}catch(e){}}
+ if(!Object.keys(out).length)throw 0;return out}
+async function finish(plain){
+ let days={...plain};
+ if(Object.keys(ENC).length){for(;;){
+  if(!PW)PW=prompt("Nhập mật khẩu để xem file đã mã hóa"+(Object.keys(plain).length?" (Hủy = chỉ xem file không mã hóa)":"")+":")||"";
+  if(!PW){if(!Object.keys(plain).length){$("meta").textContent="Cần mật khẩu để xem dữ liệu. Tải lại trang để nhập lại.";return}break}
+  try{$("meta").textContent="Đang giải mã…";days={...await decryptAll(PW),...plain};try{sessionStorage.setItem("pw",PW)}catch(e){}break}
+  catch(e){try{sessionStorage.removeItem("pw")}catch(x){}PW="";alert("Sai mật khẩu hoặc file bị lỗi, thử lại.")}}}
+ DAYS=days;$("err").hidden=true;init()}
+// Đọc thư mục DATA trên máy (khi mở file trực tiếp bằng Chrome/Edge)
+const idb=()=>new Promise((a,b)=>{const r=indexedDB.open("sodu",1);r.onupgradeneeded=()=>r.result.createObjectStore("kv");r.onsuccess=()=>a(r.result);r.onerror=()=>b(r.error)});
+const kvGet=async k=>{const db=await idb();return new Promise((a,b)=>{const q=db.transaction("kv").objectStore("kv").get(k);q.onsuccess=()=>a(q.result);q.onerror=()=>b(q.error)})};
+const kvSet=async(k,v)=>{const db=await idb();return new Promise((a,b)=>{const t=db.transaction("kv","readwrite");t.objectStore("kv").put(v,k);t.oncomplete=()=>a();t.onerror=()=>b(t.error)})};
+async function readFolder(dir){const enc={},plain={},sig=[];
+ for await(const [name,h] of dir.entries()){if(h.kind!=="file")continue;const m=name.match(/^balance_(\d{8}).*\.json$/i);if(!m)continue;
+  try{const f=await h.getFile();sig.push(name+f.size+f.lastModified);const j=JSON.parse(await f.text()),d=m[1].replace(/(\d{4})(\d{2})(\d{2})/,"$1-$2-$3");
+   if(j.rows)plain[j.date||d]=j.rows;else if(j.iv&&j.data)enc[d]=j}catch(e){}}
+ return{enc,plain,sig:sig.sort().join("|")}}
+async function loadLocal(dir){const r=await readFolder(dir);SIG=r.sig;ENC=r.enc;SRC="thư mục trên máy: "+dir.name;
+ if(!Object.keys(r.enc).length&&!Object.keys(r.plain).length){$("meta").textContent="Thư mục "+dir.name+" chưa có file balance_YYYYMMDD.json";init();return}
+ await finish(r.plain)}
+async function initLocal(){if(!window.showDirectoryPicker)return false;$("pick").hidden=false;
+ let h=null;try{h=await kvGet("dir")}catch(e){}if(!h)return false;LOCAL=h;
+ if(await h.queryPermission({mode:"read"})==="granted"){await loadLocal(h);return true}
+ $("meta").textContent="Cần cho phép đọc lại thư mục "+h.name;$("grant").hidden=false;return true}
+$("pick").onclick=async()=>{try{const h=await showDirectoryPicker({id:"sodu-data",mode:"read"});LOCAL=h;try{await kvSet("dir",h)}catch(e){}$("grant").hidden=true;await loadLocal(h)}catch(e){if(e.name!=="AbortError")alert(e.message)}};
+$("grant").onclick=async()=>{try{if(await LOCAL.requestPermission({mode:"read"})==="granted"){$("grant").hidden=true;await loadLocal(LOCAL)}}catch(e){alert(e.message)}};
+setInterval(async()=>{if(!LOCAL)return;try{if(await LOCAL.queryPermission({mode:"read"})!=="granted")return;const r=await readFolder(LOCAL);if(r.sig!==SIG){SIG=r.sig;ENC=r.enc;await finish(r.plain)}}catch(e){}},20000);
+// Đọc từ web (GitHub Pages): balance_YYYYMMDD.json hoặc balance_YYYYMMDD.enc.json trong thư mục DATA
+async function loadRemote(){const plain={},t=new Date(),dates=[];
+ for(let i=0;i<90;i++){const d=new Date(t-i*864e5);dates.push(d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"))}
+ await Promise.all(dates.map(async d=>{
+  try{const j=await getJson(DIR+"/balance_"+ymd(d)+".json");if(j.rows){plain[j.date||d]=j.rows;return}}catch(e){}
+  try{ENC[d]=await getJson(DIR+"/balance_"+ymd(d)+".enc.json")}catch(e){}}));
+ if(!Object.keys(ENC).length&&!Object.keys(plain).length){const e=$("err");
+  e.innerHTML="Không tìm thấy file dữ liệu ở <code>"+new URL(DIR+"/",location.href).href+"</code>. Kiểm tra thư mục <b>"+DIR+"</b> trên GitHub có file <b>balance_YYYYMMDD.json</b> (đúng chữ hoa/thường) và chờ 1–2 phút sau khi push.";
+  e.hidden=false;init();return}
+ SRC="GitHub";await finish(plain)}
+async function boot(){
+ if(location.protocol==="file:"){if(await initLocal())return;const e=$("err");e.hidden=false;
+  e.innerHTML=window.showDirectoryPicker?"Bấm <b>Chọn thư mục DATA</b> ở góc trên rồi chọn thư mục DATA trên máy bạn (chỉ chọn 1 lần).":"Trình duyệt này không đọc được thư mục. Hãy mở bằng Chrome hoặc Edge.";init();return}
+ await loadRemote()}
+// ===== Hiển thị =====
+const sums=rows=>{const g={};rows.filter(isVnd).forEach(r=>{const x=g[r.bank]=g[r.bank]||{b:r.bank,ca:0,sv:0};x[isSv(r)?"sv":"ca"]+=r.balance});return g};
+const tot=g=>Object.values(g).reduce((s,x)=>s+x.ca+x.sv,0);
+function init(){const ds=Object.keys(DAYS).sort().reverse();$("dt").innerHTML=ds.map(d=>`<option>${d}</option>`).join("");$("dt").hidden=!ds.length;render()}
 function render(){
- const ds=Object.keys(DAYS).sort();if(!ds.length){$("meta").textContent="Chưa có dữ liệu";return}
+ const ds=Object.keys(DAYS).sort();
+ if(!ds.length){$("big").textContent="–";$("strip").innerHTML=$("chips").innerHTML=$("stats").innerHTML=$("list").innerHTML=$("trend").innerHTML="";return}
  const cur=$("dt").value||ds[ds.length-1],i=ds.indexOf(cur),prev=i>0?ds[i-1]:null;
- const rows=DAYS[cur],g=sums(rows),pg=prev?sums(DAYS[prev]):null;
- const banks=Object.values(g).map(x=>({...x,tot:x.ca+x.sv,rows:rows.filter(r=>r.bank===x.b)})).sort((a,b)=>b.tot-a.tot);
- const tot=banks.reduce((s,x)=>s+x.tot,0),ca=banks.reduce((s,x)=>s+x.ca,0),sv=banks.reduce((s,x)=>s+x.sv,0);
- const ptot=pg?Object.values(pg).reduce((s,x)=>s+x.ca+x.sv,0):null;
- const dl=(d)=>d==null?"":`<span class="${d>=0?"up":"dn"}">${DT(d)}</span> so với ${prev}`;
- const fx=rows.filter(r=>!isVnd(r)&&r.balance>0).length;
- $("meta").textContent=`Số dư ngày ${cur} · ${banks.length} ngân hàng · ${rows.length} tài khoản`;
- $("kp").innerHTML=[["Tổng tiền (VND)",T(tot),ptot==null?F(tot)+" đ":dl(tot-ptot)],["Thanh toán",T(ca),(tot?ca/tot*100:0).toFixed(1)+"%"],["Tiền gửi / Saving",T(sv),(tot?sv/tot*100:0).toFixed(1)+"%"],["Số ngày có dữ liệu",ds.length,"từ "+ds[0]]].map(a=>`<div class="c"><div class="k">${a[0]}</div><div class="v">${a[1]}</div><div class="sm">${a[2]}</div></div>`).join("");
- const mx=banks[0]?banks[0].tot:1;
- $("bars").innerHTML=banks.map(x=>{const p=pg&&pg[x.b]?x.tot-pg[x.b].ca-pg[x.b].sv:null;
-  return `<div class="row"><b>${x.b}</b><div class="bar" style="width:${Math.max(x.tot/mx*100,1)}%"><i style="width:${x.tot?x.ca/x.tot*100:0}%;background:var(--a)"></i><i style="width:${x.tot?x.sv/x.tot*100:0}%;background:var(--b)"></i></div><span class="n">${T(x.tot)}${p!=null&&p!==0?`<br><span class="sm ${p>=0?"up":"dn"}">${DT(p)}</span>`:""}</span></div>`}).join("");
+ const rows=DAYS[cur],g=sums(rows),pg=prev?sums(DAYS[prev]):null,all=new Set();
+ ds.forEach(d=>DAYS[d].forEach(r=>all.add(r.bank)));const col=b=>PAL[[...all].sort().indexOf(b)%PAL.length];
+ const banks=Object.values(g).map(x=>({...x,t:x.ca+x.sv,rows:rows.filter(r=>r.bank===x.b)})).sort((a,b)=>b.t-a.t);
+ const total=banks.reduce((s,x)=>s+x.t,0),ca=banks.reduce((s,x)=>s+x.ca,0),sv=banks.reduce((s,x)=>s+x.sv,0),pt=pg?tot(pg):null;
+ const pc=n=>total?(n/total*100).toFixed(1).replace(".",",")+"%":"0%";
+ $("meta").textContent=`Số dư ngày ${cur.split("-").reverse().join("/")} · ${banks.length} ngân hàng · ${rows.length} tài khoản`+(SRC?" · "+SRC:"");
+ $("big").innerHTML=T(total)+"<small>tỷ đồng</small>";
+ $("dl").innerHTML=F(total)+" đ"+(pt==null?"":` · <span class="${total>=pt?"up":"dn"}">${S(total-pt)} tỷ</span> so với ${prev.split("-").reverse().join("/")}`);
+ $("strip").innerHTML=banks.map(x=>`<div class="seg" style="flex:${Math.max(x.t,1)};--c:${col(x.b)}" title="${x.b}: ${T(x.t)} tỷ"><i style="flex:${x.ca}"></i><b style="flex:${x.sv}"></b></div>`).join("");
+ $("chips").innerHTML=banks.map(x=>`<span style="--c:${col(x.b)}">${x.b}<em>${T(x.t)} tỷ · ${pc(x.t)}</em></span>`).join("");
+ $("stats").innerHTML=[["Tài khoản thanh toán",T(ca)+" tỷ",pc(ca)],["Tiền gửi / Saving",T(sv)+" tỷ",pc(sv)],["Tài khoản có số dư",rows.filter(r=>r.balance>0).length,"trên "+rows.length+" tài khoản"],["Ngân hàng lớn nhất",banks[0].b,pc(banks[0].t)+" tổng tiền"]].map(a=>`<div><span class="lab">${a[0]}</span><b>${a[1]}</b><span class="lab">${a[2]}</span></div>`).join("");
  trend(ds,cur);
- const q=$("q").value.trim().toLowerCase();let h="";
- banks.forEach(x=>{const rs=x.rows.filter(r=>!q||(r.bank+r.code+r.name).toLowerCase().includes(q));if(!rs.length)return;
-  h+=`<details ${q?"open":""}><summary><b>${x.b}</b><span class="sm">Thanh toán ${T(x.ca)} · Tiền gửi ${T(x.sv)}</span><b class="r">${F(x.tot)}</b></summary><div class="tb"><table><thead><tr><th>Mã</th><th>Tên</th><th>Loại</th><th class="r">Số dư</th></tr></thead><tbody>`+rs.map(r=>`<tr><td>${r.code}</td><td>${r.name}</td><td>${isSv(r)?"Tiền gửi":"Thanh toán"}</td><td class="r">${F(r.balance)}</td></tr>`).join("")+`</tbody></table></div></details>`});
- $("list").innerHTML=h||'<p class="sm">Không có kết quả.</p>';
- $("note").textContent=fx?`Có ${fx} tài khoản ngoại tệ có số dư, chưa cộng vào tổng VND.`:"";
-}
+ const q=$("q").value.trim().toLowerCase(),nz=$("nz").checked;let h="";
+ banks.forEach(x=>{const rs=x.rows.filter(r=>(!nz||r.balance>0)&&(!q||(r.bank+r.code+r.name).toLowerCase().includes(q)));if(!rs.length)return;
+  const d=pg&&pg[x.b]?x.t-pg[x.b].ca-pg[x.b].sv:null;
+  h+=`<details class="bk" style="--c:${col(x.b)}" ${q?"open":""}><summary><span class="nm">${x.b}</span><span class="r h">${T(x.ca)}<div class="hd">thanh toán</div></span><span class="r h">${T(x.sv)}<div class="hd">tiền gửi</div></span><span class="r tt">${T(x.t)} tỷ<div class="hd">${pc(x.t)}</div></span><span class="r h ${d>0?"up":d<0?"dn":"z"}">${d==null?"":d===0?"–":S(d)}</span></summary><div class="acc"><table><thead><tr><th>Mã tài khoản</th><th>Tên</th><th>Loại</th><th class="r">Số dư</th></tr></thead><tbody>`+
+  rs.map(r=>`<tr><td>${r.code}</td><td>${r.name}</td><td class="tg">${isSv(r)?"Tiền gửi":"Thanh toán"}</td><td class="r ${r.balance?"":"z"}">${F(r.balance)}</td></tr>`).join("")+`</tbody></table></div></details>`});
+ $("list").innerHTML=h||'<p class="lab">Không có tài khoản nào khớp.</p>';
+ const fx=rows.filter(r=>!isVnd(r)&&r.balance>0).length;$("note").textContent=fx?`Có ${fx} tài khoản ngoại tệ có số dư, chưa cộng vào tổng VND.`:""}
 function trend(ds,cur){
- if(ds.length<2){$("trend").innerHTML='<p class="sm">Cần ít nhất 2 ngày dữ liệu để vẽ biến động. Mỗi ngày thêm một file balance_YYYYMMDD.json vào data/.</p>';return}
- const pts=ds.map(d=>[d,Object.values(sums(DAYS[d])).reduce((s,x)=>s+x.ca+x.sv,0)]);
- const W=900,H=200,P=40,mn=Math.min(...pts.map(p=>p[1])),mxv=Math.max(...pts.map(p=>p[1])),rg=(mxv-mn)||1;
- const X=i=>P+i*(W-2*P)/(pts.length-1),Y=v=>H-30-(v-mn)/rg*(H-60);
- $("trend").innerHTML=`<div style="overflow-x:auto"><svg viewBox="0 0 ${W} ${H}" style="width:100%;min-width:560px"><polyline fill="none" stroke="var(--a)" stroke-width="2" points="${pts.map((p,i)=>X(i)+","+Y(p[1])).join(" ")}"/>`+
- pts.map((p,i)=>`<circle cx="${X(i)}" cy="${Y(p[1])}" r="${p[0]===cur?5:3}" fill="var(--a)"><title>${p[0]}: ${T(p[1])}</title></circle>`+(i%Math.ceil(pts.length/8)===0||i===pts.length-1?`<text x="${X(i)}" y="${H-8}" text-anchor="middle">${p[0].slice(5)}</text>`:"")).join("")+
- `<text x="4" y="${Y(mxv)+4}">${T(mxv)}</text><text x="4" y="${Y(mn)+4}">${T(mn)}</text></svg></div>`;
-}
-$("dt").addEventListener("change",render);$("q").addEventListener("input",render);
-$("f").addEventListener("change",async e=>{
- let pw="";
- for(const file of e.target.files){try{let j=JSON.parse(await file.text());
-  if(j.iv&&j.data){pw=pw||prompt("Nhập mật khẩu:")||"";const key=await deriveKey(pw);
-   j=JSON.parse(new TextDecoder().decode(await crypto.subtle.decrypt({name:"AES-GCM",iv:unb64(j.iv)},key,unb64(j.data))))}
-  if(j.date&&j.rows)DAYS[j.date]=j.rows}catch(x){alert("Không đọc được "+file.name)}}
- $("err").style.display="none";init();e.target.value="";
-});
-load();
+ if(ds.length<2){$("trlab").textContent="Cần ít nhất 2 ngày dữ liệu để vẽ biến động. Mỗi ngày bỏ thêm một file balance_YYYYMMDD.json vào thư mục DATA.";$("trend").innerHTML="";return}
+ $("trlab").textContent="Tổng tiền cuối mỗi ngày, đơn vị tỷ đồng.";
+ const pts=ds.map(d=>[d,tot(sums(DAYS[d]))]),W=900,H=190,P=44,mn=Math.min(...pts.map(p=>p[1])),mx=Math.max(...pts.map(p=>p[1])),rg=(mx-mn)||1;
+ const X=i=>P+i*(W-P-12)/(pts.length-1),Y=v=>H-34-(v-mn)/rg*(H-70),L=pts.map((p,i)=>X(i)+","+Y(p[1])).join(" ");
+ $("trend").innerHTML=`<div style="overflow-x:auto"><svg viewBox="0 0 ${W} ${H}" style="width:100%;min-width:560px;color:var(--ac)"><polygon points="${X(0)},${H-34} ${L} ${X(pts.length-1)},${H-34}" fill="currentColor" opacity=".1"/><polyline fill="none" stroke="currentColor" stroke-width="2" points="${L}"/>`+
+ pts.map((p,i)=>`<circle cx="${X(i)}" cy="${Y(p[1])}" r="${p[0]===cur?5:3}" fill="currentColor"><title>${p[0]}: ${T(p[1])} tỷ</title></circle>`+(i%Math.ceil(pts.length/8)===0||i===pts.length-1?`<text x="${X(i)}" y="${H-10}" text-anchor="middle" font-size="11" fill="var(--mu)">${p[0].slice(5)}</text>`:"")).join("")+
+ `<text x="0" y="${Y(mx)+4}" font-size="11" fill="var(--mu)">${T(mx)}</text><text x="0" y="${Y(mn)+4}" font-size="11" fill="var(--mu)">${T(mn)}</text></svg></div>`}
+$("dt").onchange=render;$("q").oninput=render;$("nz").onchange=render;
+$("f").onchange=async e=>{let pw="";for(const file of e.target.files){try{let j=JSON.parse(await file.text());
+ if(j.iv&&j.data){pw=pw||PW||prompt("Nhập mật khẩu:")||"";j=await dec(j,await deriveKey(pw))}
+ if(j.date&&j.rows)DAYS[j.date]=j.rows}catch(x){alert("Không đọc được "+file.name)}}
+ $("err").hidden=true;SRC="file bạn chọn";init();e.target.value=""};
+boot();
 </script></body></html>

@@ -63,7 +63,7 @@ td.r,th.r{text-align:right}.z{color:var(--mu)}
 @media(prefers-reduced-motion:no-preference){.seg{transition:flex .4s}}
 </style></head><body><div class="w">
 <header class="top"><div><h1>Số dư ngân hàng</h1><div class="mt" id="meta">Đang tải…</div></div>
-<div class="act"><select id="dt" aria-label="Chọn ngày"></select><select id="cmp" aria-label="So sánh với"></select><button class="btn" id="rf" title="Tải lại dữ liệu mới nhất, bỏ qua cache">Làm mới</button><button class="btn" id="csv">Xuất CSV</button><button class="btn" id="prn">In / PDF</button><button class="btn" id="pick" hidden>Chọn thư mục DATA</button><button class="btn" id="grant" hidden>Cho phép đọc thư mục</button>
+<div class="act"><select id="dt" aria-label="Chọn ngày"></select><select id="cmp" aria-label="So sánh với"></select><button class="btn" id="rf" title="Tải lại dữ liệu mới nhất, bỏ qua cache">Làm mới</button><button class="btn" id="csv">Xuất CSV</button><button class="btn" id="prn">In / PDF</button><button class="btn" id="pick" hidden>Chọn thư mục DATA</button><button class="btn" id="grant" hidden>Cho phép đọc thư mục</button><button class="btn" id="ed" hidden>Chỉnh sửa số dư</button>
 <label class="btn">Mở file JSON<input type="file" id="f" accept=".json" multiple hidden></label></div></header>
 <div class="err" id="err" hidden></div>
 <div class="row1"><section class="hero"><div class="lab">Tổng tiền tại các ngân hàng (VND)</div><div class="big" id="big">–</div><div class="dl" id="dl"></div>
@@ -78,6 +78,8 @@ td.r,th.r{text-align:right}.z{color:var(--mu)}
 <div id="list"></div></section>
 <p id="note"></p></div>
 <script>
+// URL Web App của Apps Script (đuôi /exec) dùng để lưu & đồng bộ các số dư đã sửa. Để trống = tắt tính năng sửa. Dữ liệu gốc vẫn đọc từ thư mục DATA.
+const API="https://script.google.com/macros/s/AKfycbwq36x_Uc1pZsJp6tWJPcSDgb4lDMpPpFdQOSJRczfE4D-4zle_HoVQ1nDB6L9aPXk/exec";
 const DIR="DATA",$=id=>document.getElementById(id);
 addEventListener("error",e=>{const x=$("err");x.hidden=false;x.textContent="Lỗi trang: "+e.message});
 addEventListener("unhandledrejection",e=>{const x=$("err");x.hidden=false;x.textContent="Lỗi trang: "+(e.reason&&e.reason.message||e.reason)});
@@ -106,7 +108,7 @@ async function finish(plain){
   if(!PW){if(!Object.keys(plain).length){$("meta").textContent="Cần mật khẩu để xem dữ liệu. Tải lại trang để nhập lại.";return}break}
   try{$("meta").textContent="Đang giải mã…";days={...await decryptAll(PW),...plain};try{sessionStorage.setItem("pw",PW)}catch(e){}break}
   catch(e){try{sessionStorage.removeItem("pw")}catch(x){}PW="";alert("Sai mật khẩu hoặc file bị lỗi, thử lại.")}}}
- DAYS=days;$("err").hidden=true;init()}
+ await loadOv();DAYS=days;applyOv();$("err").hidden=true;init()}
 // Đọc thư mục DATA trên máy (khi mở file trực tiếp bằng Chrome/Edge)
 const idb=()=>new Promise((a,b)=>{const r=indexedDB.open("sodu",1);r.onupgradeneeded=()=>r.result.createObjectStore("kv");r.onsuccess=()=>a(r.result);r.onerror=()=>b(r.error)});
 const kvGet=async k=>{const db=await idb();return new Promise((a,b)=>{const q=db.transaction("kv").objectStore("kv").get(k);q.onsuccess=()=>a(q.result);q.onerror=()=>b(q.error)})};
@@ -141,6 +143,39 @@ async function loadRemote(){const plain={},info=[],owner=location.hostname.split
   e.innerHTML="Không đọc được file dữ liệu trong thư mục <b>"+DIR+"</b> của <code>"+owner+"/"+repo+"</code>."+(info.length?"<br>Chi tiết: "+info.join("; "):"")+"<br>Kiểm tra repo là <b>Public</b>, file đúng tên <b>balance_YYYYMMDD.json</b>, rồi bấm Ctrl+F5.";
   e.hidden=false;init();return}
  SRC="GitHub";await finish(plain)}
+// ===== Chỉnh sửa số dư (lưu qua Google Apps Script, đồng bộ cho mọi người xem) =====
+let OV={rev:-1,data:{}},EDIT=false,APW="";
+async function loadOv(){if(!API)return false;try{const r=await getJson(API);if(r&&r.ok&&r.rev!==OV.rev){OV={rev:r.rev,data:r.data||{}};return true}}catch(e){}return false}
+function applyOv(){
+ for(const d in DAYS)DAYS[d].forEach(r=>{if(r.o!==undefined){r.balance=r.o;delete r.o}r.ed=null});
+ for(const d in OV.data){if(!DAYS[d])continue;const m=OV.data[d];DAYS[d].forEach(r=>{const x=m[r.code];if(x){r.o=r.balance;r.balance=x.v;r.ed=x}})}}
+async function postOv(o){const r=await fetch(API,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({...o,pass:APW})});return r.json()}
+async function saveOv(data){let r;
+ try{r=await postOv({baseRev:OV.rev,data})}catch(e){alert("Không kết nối được Apps Script.");return false}
+ if(r.ok){OV={rev:r.rev,data};applyOv();render();return true}
+ if(r.error==="conflict"){await loadOv();applyOv();render();alert("Có người vừa sửa số dư. Đã tải lại bản mới nhất, hãy sửa lại.")}
+ else if(r.error==="pass"){EDIT=false;APW="";$("ed").textContent="Chỉnh sửa số dư";render();alert("Sai mật khẩu.")}
+ else alert("Lỗi: "+r.error);
+ return false}
+$("ed").onclick=async()=>{
+ if(EDIT){EDIT=false;APW="";$("ed").textContent="Chỉnh sửa số dư";render();return}
+ const p=prompt("Nhập mật khẩu để chỉnh sửa số dư:");if(!p)return;APW=p;let r;
+ try{r=await postOv({action:"auth"})}catch(e){APW="";alert("Không kết nối được Apps Script.");return}
+ if(!r.ok){APW="";alert("Sai mật khẩu.");return}
+ EDIT=true;$("ed").textContent="Khóa chỉnh sửa";render()};
+$("list").onclick=async e=>{const b=e.target.closest("[data-ed]");if(!b||!EDIT)return;
+ const cur=$("dt").value,code=b.dataset.ed,r=(DAYS[cur]||[]).find(x=>x.code===code);if(!r)return;
+ const data=JSON.parse(JSON.stringify(OV.data));data[cur]=data[cur]||{};
+ const clean=()=>{if(!Object.keys(data[cur]).length)delete data[cur]};
+ if(b.dataset.a==="undo"){delete data[cur][code];clean()}
+ else{const was=r.o!==undefined?r.o:r.balance,s=prompt("Số dư mới cho "+r.name+" ngày "+cur+" (VND). Số dư gốc: "+F(was),String(r.balance));
+  if(s===null)return;const v=Number(s.replace(/[.,\s]/g,""));
+  if(s.trim()===""||!isFinite(v)){alert("Số không hợp lệ.");return}
+  if(v===was){delete data[cur][code];clean()}else data[cur][code]={v,was,t:new Date().toISOString()}}
+ await saveOv(data)};
+if(API)$("ed").hidden=false;
+// Đồng bộ: mỗi 30 giây kiểm tra xem có ai vừa sửa không
+setInterval(async()=>{if(document.hidden||!API)return;if(await loadOv()){applyOv();render()}},30000);
 async function boot(){
  if(location.protocol==="file:"){if(await initLocal())return;const e=$("err");e.hidden=false;
   e.innerHTML=window.showDirectoryPicker?"Bấm <b>Chọn thư mục DATA</b> ở góc trên rồi chọn thư mục DATA trên máy bạn (chỉ chọn 1 lần).":"Trình duyệt này không đọc được thư mục. Hãy mở bằng Chrome hoặc Edge.";init();return}
@@ -175,13 +210,13 @@ function render(){
  $("mvDn").innerHTML=mv.filter(x=>x.d<0).sort((a,b)=>a.d-b.d).slice(0,5).map(mrow).join("")||'<div class="lab">Không có</div>';
  due(rows,cur);
  const srt=$("srt").value,dd=x=>pg&&pg[x.b]?x.t-pg[x.b].ca-pg[x.b].sv:0,tb=[...banks].sort(srt==="n"?(a,b)=>a.b.localeCompare(b.b):srt==="d"?(a,b)=>Math.abs(dd(b))-Math.abs(dd(a)):(a,b)=>b.t-a.t);
- const q=$("q").value.trim().toLowerCase(),nz=$("nz").checked;let h="";
+ const OPEN=new Set([...document.querySelectorAll("#list details[open]")].map(d=>d.dataset.b)),q=$("q").value.trim().toLowerCase(),nz=$("nz").checked;let h="";
  tb.forEach(x=>{const rs=x.rows.filter(r=>(!nz||r.balance>0)&&(!q||(r.bank+r.code+r.name).toLowerCase().includes(q)));if(!rs.length)return;
   const d=pg&&pg[x.b]?x.t-pg[x.b].ca-pg[x.b].sv:null;
-  h+=`<details class="bk" style="--c:${col(x.b)}" ${q?"open":""}><summary><span class="nm">${x.b}</span><span class="mb h"><span class="seg2" style="width:${Math.max(x.t/banks[0].t*100,1).toFixed(1)}%"><i style="flex:${x.ca}"></i><b style="flex:${x.sv}"></b></span></span><span class="r h">${T(x.ca)}<div class="hd">thanh toán</div></span><span class="r h">${T(x.sv)}<div class="hd">tiền gửi</div></span><span class="r tt">${T(x.t)} tỷ<div class="hd">${pc(x.t)}</div></span><span class="r h ${d>0?"up":d<0?"dn":"z"}">${d==null?"":d===0?"–":S(d)}</span></summary><div class="acc"><table><thead><tr><th>Mã tài khoản</th><th>Tên</th><th>Loại</th><th class="r">Số dư</th></tr></thead><tbody>`+
-  rs.map(r=>`<tr><td>${r.code}</td><td>${r.name}</td><td class="tg">${isSv(r)?"Tiền gửi":"Thanh toán"}</td><td class="r ${r.balance?"":"z"}">${F(r.balance)}</td></tr>`).join("")+`</tbody></table></div></details>`});
+  h+=`<details class="bk" data-b="${x.b}" style="--c:${col(x.b)}" ${q||OPEN.has(x.b)?"open":""}><summary><span class="nm">${x.b}</span><span class="mb h"><span class="seg2" style="width:${Math.max(x.t/banks[0].t*100,1).toFixed(1)}%"><i style="flex:${x.ca}"></i><b style="flex:${x.sv}"></b></span></span><span class="r h">${T(x.ca)}<div class="hd">thanh toán</div></span><span class="r h">${T(x.sv)}<div class="hd">tiền gửi</div></span><span class="r tt">${T(x.t)} tỷ<div class="hd">${pc(x.t)}</div></span><span class="r h ${d>0?"up":d<0?"dn":"z"}">${d==null?"":d===0?"–":S(d)}</span></summary><div class="acc"><table><thead><tr><th>Mã tài khoản</th><th>Tên</th><th>Loại</th><th class="r">Số dư</th>${EDIT?"<th></th>":""}</tr></thead><tbody>`+
+  rs.map(r=>`<tr><td>${r.code}</td><td>${r.name}</td><td class="tg">${isSv(r)?"Tiền gửi":"Thanh toán"}</td><td class="r ${r.balance?"":"z"}">${F(r.balance)}${r.ed?` <span class="tg" title="Gốc: ${F(r.ed.was)} · sửa lúc ${new Date(r.ed.t).toLocaleString("vi-VN")}">(đã sửa)</span>`:""}</td>${EDIT?`<td class="r"><button class="btn" data-ed="${r.code}" data-a="edit">Sửa</button>${r.ed?` <button class="btn" data-ed="${r.code}" data-a="undo">Hoàn tác</button>`:""}</td>`:""}</tr>`).join("")+`</tbody></table></div></details>`});
  $("list").innerHTML=h||'<p class="lab">Không có tài khoản nào khớp.</p>';
- const fx=rows.filter(r=>!isVnd(r)&&r.balance>0).length;$("note").textContent=fx?`Có ${fx} tài khoản ngoại tệ có số dư, chưa cộng vào tổng VND.`:""}
+ const fx=rows.filter(r=>!isVnd(r)&&r.balance>0).length,ec=rows.filter(r=>r.ed).length;$("note").textContent=[fx?`Có ${fx} tài khoản ngoại tệ có số dư, chưa cộng vào tổng VND.`:"",ec?`Ngày này có ${ec} tài khoản đã được sửa tay số dư (xem mục "đã sửa" trong từng ngân hàng).`:""].filter(Boolean).join(" ")}
 function due(rows,cur){
  const dp=(rows.deps||[]).filter(x=>x.balance>0),L=$("dueLab");
  if(!dp.length){L.textContent="Chưa có dữ liệu ngày đáo hạn. Hãy tải số dư bằng extension phiên bản 3.2 trở lên.";$("dueSum").innerHTML=$("dueList").innerHTML="";return}
@@ -209,7 +244,7 @@ $("q").oninput=render;$("nz").onchange=render;
 $("f").onchange=async e=>{let pw="";for(const file of e.target.files){try{let j=JSON.parse(await file.text());
  if(j.iv&&j.data){pw=pw||PW||prompt("Nhập mật khẩu:")||"";j=await dec(j,await deriveKey(pw))}
  if(j.date&&j.rows)DAYS[j.date]=RW(j)}catch(x){alert("Không đọc được "+file.name)}}
- $("err").hidden=true;SRC="file bạn chọn";init();e.target.value=""};
+ $("err").hidden=true;SRC="file bạn chọn";applyOv();init();e.target.value=""};
 // Làm mới dữ liệu: bấm nút, hoặc tự động khi quay lại tab sau hơn 1 phút
 let LASTRF=Date.now();
 async function refresh(){LASTRF=Date.now();const b=$("rf");b.disabled=true;

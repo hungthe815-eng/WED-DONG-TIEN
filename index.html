@@ -63,7 +63,7 @@ td.r,th.r{text-align:right}.z{color:var(--mu)}
 @media(prefers-reduced-motion:no-preference){.seg{transition:flex .4s}}
 </style></head><body><div class="w">
 <header class="top"><div><h1>Số dư ngân hàng</h1><div class="mt" id="meta">Đang tải…</div></div>
-<div class="act"><select id="dt" aria-label="Chọn ngày"></select><select id="cmp" aria-label="So sánh với"></select><button class="btn" id="csv">Xuất CSV</button><button class="btn" id="prn">In / PDF</button><button class="btn" id="pick" hidden>Chọn thư mục DATA</button><button class="btn" id="grant" hidden>Cho phép đọc thư mục</button>
+<div class="act"><select id="dt" aria-label="Chọn ngày"></select><select id="cmp" aria-label="So sánh với"></select><button class="btn" id="rf" title="Tải lại dữ liệu mới nhất, bỏ qua cache">Làm mới</button><button class="btn" id="csv">Xuất CSV</button><button class="btn" id="prn">In / PDF</button><button class="btn" id="pick" hidden>Chọn thư mục DATA</button><button class="btn" id="grant" hidden>Cho phép đọc thư mục</button>
 <label class="btn">Mở file JSON<input type="file" id="f" accept=".json" multiple hidden></label></div></header>
 <div class="err" id="err" hidden></div>
 <div class="row1"><section class="hero"><div class="lab">Tổng tiền tại các ngân hàng (VND)</div><div class="big" id="big">–</div><div class="dl" id="dl"></div>
@@ -91,7 +91,8 @@ const DT=d=>d+(TM(d)?" · "+TM(d):"");
 let SEL=null,DAYS={},ENC={},PW="",SRC="",LOCAL=null,SIG="";
 try{PW=sessionStorage.getItem("pw")||""}catch(e){}
 const ymd=d=>d.replaceAll("-",""),unb64=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
-async function getJson(u){const r=await fetch(u,{cache:"no-store"});if(!r.ok)throw 0;return r.json()}
+// Thêm tham số thời gian vào mọi lần tải để bỏ qua cả cache của trình duyệt lẫn cache CDN của GitHub (Pages/raw giữ bản cũ vài phút)
+async function getJson(u){const r=await fetch(u+(u.includes("?")?"&":"?")+"_="+Date.now(),{cache:"no-store"});if(!r.ok)throw 0;return r.json()}
 async function deriveKey(pw){const te=new TextEncoder(),km=await crypto.subtle.importKey("raw",te.encode(pw),"PBKDF2",false,["deriveKey"]);
  return crypto.subtle.deriveKey({name:"PBKDF2",salt:te.encode("so-du-ngan-hang-v1"),iterations:600000,hash:"SHA-256"},km,{name:"AES-GCM",length:256},false,["decrypt"])}
 async function dec(o,key){return JSON.parse(new TextDecoder().decode(await crypto.subtle.decrypt({name:"AES-GCM",iv:unb64(o.iv)},key,unb64(o.data))))}
@@ -147,7 +148,8 @@ async function boot(){
 // ===== Hiển thị =====
 const sums=rows=>{const g={};rows.filter(isVnd).forEach(r=>{const x=g[r.bank]=g[r.bank]||{b:r.bank,ca:0,sv:0};x[isSv(r)?"sv":"ca"]+=r.balance});return g};
 const tot=g=>Object.values(g).reduce((s,x)=>s+x.ca+x.sv,0);
-function init(){const ds=Object.keys(DAYS).sort().reverse();$("dt").innerHTML=ds.map(d=>`<option value="${d}">${DT(d)}</option>`).join("");$("dt").hidden=$("cmp").hidden=!ds.length;render()}
+let TOP="";
+function init(){const ds=Object.keys(DAYS).sort().reverse(),keep=$("dt").value,wasTop=!keep||keep===TOP;TOP=ds[0]||"";$("dt").innerHTML=ds.map(d=>`<option value="${d}">${DT(d)}</option>`).join("");if(!wasTop&&ds.includes(keep))$("dt").value=keep;$("dt").hidden=$("cmp").hidden=!ds.length;render()}
 function render(){
  const ds=Object.keys(DAYS).sort();
  if(!ds.length){$("big").textContent="–";$("strip").innerHTML=$("chips").innerHTML=$("stats").innerHTML=$("list").innerHTML=$("trend").innerHTML="";return}
@@ -208,5 +210,12 @@ $("f").onchange=async e=>{let pw="";for(const file of e.target.files){try{let j=
  if(j.iv&&j.data){pw=pw||PW||prompt("Nhập mật khẩu:")||"";j=await dec(j,await deriveKey(pw))}
  if(j.date&&j.rows)DAYS[j.date]=RW(j)}catch(x){alert("Không đọc được "+file.name)}}
  $("err").hidden=true;SRC="file bạn chọn";init();e.target.value=""};
+// Làm mới dữ liệu: bấm nút, hoặc tự động khi quay lại tab sau hơn 1 phút
+let LASTRF=Date.now();
+async function refresh(){LASTRF=Date.now();const b=$("rf");b.disabled=true;
+ try{if(location.protocol==="file:"){if(LOCAL&&await LOCAL.queryPermission({mode:"read"})==="granted")await loadLocal(LOCAL)}else{ENC={};await loadRemote()}}
+ catch(e){}finally{b.disabled=false}}
+$("rf").onclick=refresh;
+document.addEventListener("visibilitychange",()=>{if(!document.hidden&&location.protocol!=="file:"&&Date.now()-LASTRF>6e4)refresh()});
 boot();
 </script></body></html>

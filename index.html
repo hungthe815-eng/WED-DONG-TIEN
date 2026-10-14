@@ -42,16 +42,35 @@ const isSv=r=>/saving/i.test(r.type),isVnd=r=>!/USD|EUR/i.test(r.name||"");
 let DAYS={}; // date -> rows
 const ymd=d=>d.replaceAll("-","");
 async function getJson(u){const r=await fetch(u,{cache:"no-store"});if(!r.ok)throw 0;return r.json()}
+const unb64=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
+let ENC={};
+async function deriveKey(pw){const te=new TextEncoder();
+ const km=await crypto.subtle.importKey("raw",te.encode(pw),"PBKDF2",false,["deriveKey"]);
+ return crypto.subtle.deriveKey({name:"PBKDF2",salt:te.encode("so-du-ngan-hang-v1"),iterations:600000,hash:"SHA-256"},km,{name:"AES-GCM",length:256},false,["decrypt"])}
+async function decryptAll(pw){const key=await deriveKey(pw),out={};
+ for(const d of Object.keys(ENC)){const o=ENC[d];
+  const pt=await crypto.subtle.decrypt({name:"AES-GCM",iv:unb64(o.iv)},key,unb64(o.data));
+  const j=JSON.parse(new TextDecoder().decode(pt));out[j.date||d]=j.rows}
+ return out}
 async function load(){
  let dates=[];
  try{dates=await getJson("data/index.json")}catch(e){}
- if(!dates.length){ // không có index.json: dò 90 ngày gần nhất
-  const t=new Date();dates=[];
-  for(let i=0;i<90;i++){const d=new Date(t-i*864e5);dates.push(d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"))}
+ {const t=new Date(),set=new Set(dates);for(let i=0;i<90;i++){const d=new Date(t-i*864e5);set.add(d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"))}dates=[...set]}
+ await Promise.all(dates.map(async d=>{try{ENC[d]=await getJson("data/balance_"+ymd(d)+".enc.json")}catch(e){}}));
+ if(!Object.keys(ENC).length){const e=$("err");
+  const base=new URL("data/",location.href).href;
+  e.innerHTML=location.protocol==="file:"
+   ?"Bạn đang mở file trực tiếp từ máy (<b>file://</b>) nên trình duyệt chặn đọc thư mục data. Hãy mở bằng link GitHub Pages (https://...github.io/...)."
+   :"Không tìm thấy file dữ liệu nào ở <code>"+base+"</code>.<br>Kiểm tra: (1) trên GitHub có thư mục <b>data</b> (viết thường) chứa file <b>balance_YYYYMMDD.enc.json</b>; (2) mở thử link <code>"+base+"balance_"+ymd(dates[dates.length-1]).slice(0,0)+"YYYYMMDD.enc.json</code> (thay bằng ngày thật) xem có hiện nội dung không; (3) chờ 1-2 phút sau khi đẩy file. Hoặc bấm <b>Nạp file JSON thủ công</b> để xem ngay.";
+  e.style.display="block";
+  init();return}
+ let pw="";try{pw=sessionStorage.getItem("pw")||""}catch(e){}
+ for(;;){
+  if(!pw)pw=prompt("Nhập mật khẩu để xem báo cáo:")||"";
+  if(!pw){$("meta").textContent="Cần mật khẩu để xem dữ liệu. Tải lại trang để nhập lại.";return}
+  try{$("meta").textContent="Đang giải mã...";DAYS=await decryptAll(pw);try{sessionStorage.setItem("pw",pw)}catch(e){}break}
+  catch(e){try{sessionStorage.removeItem("pw")}catch(x){}pw="";alert("Sai mật khẩu hoặc file bị lỗi, thử lại.")}
  }
- await Promise.all(dates.map(async d=>{try{const j=await getJson("data/balance_"+ymd(d)+".json");DAYS[j.date||d]=j.rows}catch(e){}}));
- if(!Object.keys(DAYS).length){const e=$("err");e.style.display="block";
-  e.innerHTML="Không đọc được thư mục <b>data/</b>. Cần đặt trang này trên hosting/server (mở trực tiếp file từ máy sẽ bị trình duyệt chặn). Bạn vẫn có thể bấm <b>Nạp file JSON thủ công</b> để xem."}
  init();
 }
 function sums(rows){const g={};rows.filter(isVnd).forEach(r=>{const x=g[r.bank]=g[r.bank]||{b:r.bank,ca:0,sv:0};x[isSv(r)?"sv":"ca"]+=r.balance});return g}
@@ -92,7 +111,11 @@ function trend(ds,cur){
 }
 $("dt").addEventListener("change",render);$("q").addEventListener("input",render);
 $("f").addEventListener("change",async e=>{
- for(const file of e.target.files){try{const j=JSON.parse(await file.text());if(j.date&&j.rows)DAYS[j.date]=j.rows}catch(x){}}
+ let pw="";
+ for(const file of e.target.files){try{let j=JSON.parse(await file.text());
+  if(j.iv&&j.data){pw=pw||prompt("Nhập mật khẩu:")||"";const key=await deriveKey(pw);
+   j=JSON.parse(new TextDecoder().decode(await crypto.subtle.decrypt({name:"AES-GCM",iv:unb64(j.iv)},key,unb64(j.data))))}
+  if(j.date&&j.rows)DAYS[j.date]=j.rows}catch(x){alert("Không đọc được "+file.name)}}
  $("err").style.display="none";init();e.target.value="";
 });
 load();

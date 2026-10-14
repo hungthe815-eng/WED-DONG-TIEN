@@ -6,49 +6,54 @@
 :root{--bg:#f4f6f9;--sf:#fff;--ink:#0f1b2d;--mu:#667085;--ln:#dde3ea;--up:#0f8a5f;--dn:#c8372d;--ac:#0d6b73}
 @media (prefers-color-scheme:dark){:root{--bg:#0b1119;--sf:#131b26;--ink:#e9eef5;--mu:#8d9bb0;--ln:#243040;--up:#3ccf91;--dn:#ff7b70;--ac:#4cc3cc;color-scheme:dark}}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.55 "Be Vietnam Pro",system-ui,-apple-system,"Segoe UI",sans-serif;font-variant-numeric:tabular-nums}
-.w{max-width:1040px;margin:0 auto;padding:22px 18px 56px}
+body{margin:0;background:var(--bg);color:var(--ink);font:1rem/1.55 "Be Vietnam Pro",system-ui,-apple-system,"Segoe UI",sans-serif;font-variant-numeric:tabular-nums}
+html{font-size:clamp(15px,.55vw + 9px,21px)}
+.w{max-width:none;margin:0;padding:22px clamp(16px,3.2vw,64px) 64px}
+.row1{display:grid;grid-template-columns:minmax(300px,5fr) 7fr;gap:clamp(28px,5vw,96px);align-items:start;margin-top:8px}
+.tr{padding-top:30px}
 .top{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;padding-bottom:18px;border-bottom:1px solid var(--ln)}
-.top h1{font-size:15px;font-weight:600;margin:0;letter-spacing:.01em}.mt{font-size:13px;color:var(--mu)}
+.top h1{font-size:0.9375rem;font-weight:600;margin:0;letter-spacing:.01em}.mt{font-size:0.8125rem;color:var(--mu)}
 .act{display:flex;gap:8px;flex-wrap:wrap}
-select,.btn,input[type=search]{font:inherit;font-size:13px;padding:7px 12px;border:1px solid var(--ln);border-radius:6px;background:var(--sf);color:var(--ink);cursor:pointer}
+select,.btn,input[type=search]{font:inherit;font-size:0.8125rem;padding:7px 12px;border:1px solid var(--ln);border-radius:6px;background:var(--sf);color:var(--ink);cursor:pointer}
 .btn:hover,select:hover{border-color:var(--ac)}
 :focus-visible{outline:2px solid var(--ac);outline-offset:2px}
-.err{margin:16px 0;padding:12px 14px;border:1px solid var(--dn);border-radius:6px;background:var(--sf);font-size:14px}
-.hero{padding:34px 0 8px}
-.lab{font-size:13px;color:var(--mu)}
-.big{font-size:clamp(38px,8vw,68px);font-weight:700;line-height:1.05;letter-spacing:-.025em;margin:4px 0 6px}
+.err{margin:16px 0;padding:12px 14px;border:1px solid var(--dn);border-radius:6px;background:var(--sf);font-size:0.875rem}
+.hero{padding:30px 0 0}
+.lab{font-size:0.8125rem;color:var(--mu)}
+.big{font-size:clamp(2.6rem,6.2vw,6.4rem);font-weight:700;line-height:1.05;letter-spacing:-.025em;margin:4px 0 6px}
 .big small{font-size:.38em;font-weight:500;color:var(--mu);letter-spacing:0;margin-left:8px}
-.dl{font-size:14px;color:var(--mu)}.up{color:var(--up)}.dn{color:var(--dn)}
-.strip{display:flex;gap:3px;height:56px;margin:26px 0 12px}
+.dl{font-size:0.875rem;color:var(--mu)}.up{color:var(--up)}.dn{color:var(--dn)}
+.strip{display:flex;gap:3px;height:clamp(56px,9vh,110px);margin:14px 0 12px}
 .seg{display:flex;flex-direction:column;min-width:3px;border-radius:3px;overflow:hidden}
 .seg i{background:var(--c)}
 .seg b{background:repeating-linear-gradient(135deg,var(--c) 0 2px,color-mix(in srgb,var(--c) 22%,transparent) 2px 6px)}
-.chips{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:13px}
+.chips{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:0.8125rem}
 .chips span:before{content:"";display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:6px;background:var(--c)}
 .chips em{font-style:normal;color:var(--mu);margin-left:4px}
-.key{font-size:12px;color:var(--mu);margin-top:10px}
+.key{font-size:0.75rem;color:var(--mu);margin-top:10px}
 .key i,.key b{display:inline-block;width:18px;height:9px;vertical-align:middle;border-radius:2px;margin-right:5px}
 .key i{background:var(--mu)}.key b{margin-left:14px;background:repeating-linear-gradient(135deg,var(--mu) 0 2px,transparent 2px 6px)}
-.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));margin-top:26px;border-top:1px solid var(--ln)}
-.stats div{padding:14px 16px 4px 0}.stats b{display:block;font-size:20px;font-weight:600}
-h2{font-size:15px;font-weight:600;margin:0 0 4px}
+.stats{display:grid;grid-template-columns:repeat(2,1fr);margin-top:30px;border-top:1px solid var(--ln)}
+.stats div{padding:14px 16px 4px 0}.stats b{display:block;font-size:1.25rem;font-weight:600}
+h2{font-size:0.9375rem;font-weight:600;margin:0 0 4px}
 .sec{margin-top:42px}.sec>.lab{margin-bottom:14px}
 .tools{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-bottom:6px}
 .tools input[type=search]{flex:1;min-width:200px;cursor:text}
-.tools label{font-size:13px;color:var(--mu);display:flex;gap:6px;align-items:center;cursor:pointer}
+.tools label{font-size:0.8125rem;color:var(--mu);display:flex;gap:6px;align-items:center;cursor:pointer}
 .bk{border-top:1px solid var(--ln)}.bk:last-child{border-bottom:1px solid var(--ln)}
-.bk summary{list-style:none;cursor:pointer;display:grid;grid-template-columns:minmax(120px,1.3fr) 1fr 1fr 1.1fr 90px;gap:10px;align-items:center;padding:14px 4px}
+.bk summary{list-style:none;cursor:pointer;display:grid;grid-template-columns:minmax(110px,.8fr) 2.4fr 1fr 1fr 1.1fr 90px;gap:10px;align-items:center;padding:14px 4px}
 .bk summary::-webkit-details-marker{display:none}.bk summary:hover{background:color-mix(in srgb,var(--ink) 4%,transparent)}
 .nm{font-weight:600}.nm:before{content:"";display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:9px;background:var(--c)}
 .r{text-align:right}.tt{font-weight:600}
-.hd{font-size:12px;color:var(--mu);font-weight:400}
+.hd{font-size:0.75rem;color:var(--mu);font-weight:400}
 .acc{overflow-x:auto;padding:0 4px 14px 23px}
-table{border-collapse:collapse;width:100%;font-size:13px;min-width:480px}
+table{border-collapse:collapse;width:100%;font-size:0.8125rem;min-width:480px}
 th,td{padding:7px 8px;text-align:left;border-bottom:1px solid var(--ln)}th{color:var(--mu);font-weight:500}
 td.r,th.r{text-align:right}.z{color:var(--mu)}
-.tg{font-size:12px;color:var(--mu)}
-#note{font-size:12px;color:var(--mu);margin-top:18px}
+.tg{font-size:0.75rem;color:var(--mu)}
+#note{font-size:0.75rem;color:var(--mu);margin-top:18px}
+.mb{display:block}.seg2{display:flex;height:12px;border-radius:3px;overflow:hidden;min-width:3px}.seg2 i{background:var(--c)}.seg2 b{background:repeating-linear-gradient(135deg,var(--c) 0 2px,color-mix(in srgb,var(--c) 22%,transparent) 2px 6px)}
+@media(max-width:900px){.row1{grid-template-columns:1fr}.tr{padding-top:0}}
 @media(max-width:640px){.bk summary{grid-template-columns:1fr auto}.bk summary .h{display:none}}
 @media(prefers-reduced-motion:no-preference){.seg{transition:flex .4s}}
 </style></head><body><div class="w">
@@ -56,11 +61,11 @@ td.r,th.r{text-align:right}.z{color:var(--mu)}
 <div class="act"><select id="dt" aria-label="Chọn ngày"></select><button class="btn" id="pick" hidden>Chọn thư mục DATA</button><button class="btn" id="grant" hidden>Cho phép đọc thư mục</button>
 <label class="btn">Mở file JSON<input type="file" id="f" accept=".json" multiple hidden></label></div></header>
 <div class="err" id="err" hidden></div>
-<section class="hero"><div class="lab">Tổng tiền tại các ngân hàng (VND)</div><div class="big" id="big">–</div><div class="dl" id="dl"></div>
-<div class="strip" id="strip"></div><div class="chips" id="chips"></div>
-<div class="key"><i></i>Tài khoản thanh toán<b></b>Tiền gửi / Saving</div>
+<div class="row1"><section class="hero"><div class="lab">Tổng tiền tại các ngân hàng (VND)</div><div class="big" id="big">–</div><div class="dl" id="dl"></div>
 <div class="stats" id="stats"></div></section>
-<section class="sec"><h2>Tổng tiền theo ngày</h2><div class="lab" id="trlab"></div><div id="trend"></div></section>
+<section class="tr"><h2>Tổng tiền theo ngày</h2><div class="lab" id="trlab"></div><div id="trend"></div></section></div>
+<section class="sec"><h2>Phân bổ theo ngân hàng</h2><div class="lab">Mỗi đoạn là một ngân hàng, độ dài theo số tiền.</div><div class="strip" id="strip"></div><div class="chips" id="chips"></div>
+<div class="key"><i></i>Tài khoản thanh toán<b></b>Tiền gửi / Saving</div></section>
 <section class="sec"><h2>Từng ngân hàng</h2><div class="lab">Bấm vào một ngân hàng để xem các tài khoản.</div>
 <div class="tools"><input type="search" id="q" placeholder="Tìm số tài khoản, tên, ngân hàng…"><label><input type="checkbox" id="nz"> Ẩn tài khoản số dư 0</label></div>
 <div id="list"></div></section>
@@ -151,7 +156,7 @@ function render(){
  const q=$("q").value.trim().toLowerCase(),nz=$("nz").checked;let h="";
  banks.forEach(x=>{const rs=x.rows.filter(r=>(!nz||r.balance>0)&&(!q||(r.bank+r.code+r.name).toLowerCase().includes(q)));if(!rs.length)return;
   const d=pg&&pg[x.b]?x.t-pg[x.b].ca-pg[x.b].sv:null;
-  h+=`<details class="bk" style="--c:${col(x.b)}" ${q?"open":""}><summary><span class="nm">${x.b}</span><span class="r h">${T(x.ca)}<div class="hd">thanh toán</div></span><span class="r h">${T(x.sv)}<div class="hd">tiền gửi</div></span><span class="r tt">${T(x.t)} tỷ<div class="hd">${pc(x.t)}</div></span><span class="r h ${d>0?"up":d<0?"dn":"z"}">${d==null?"":d===0?"–":S(d)}</span></summary><div class="acc"><table><thead><tr><th>Mã tài khoản</th><th>Tên</th><th>Loại</th><th class="r">Số dư</th></tr></thead><tbody>`+
+  h+=`<details class="bk" style="--c:${col(x.b)}" ${q?"open":""}><summary><span class="nm">${x.b}</span><span class="mb h"><span class="seg2" style="width:${Math.max(x.t/banks[0].t*100,1).toFixed(1)}%"><i style="flex:${x.ca}"></i><b style="flex:${x.sv}"></b></span></span><span class="r h">${T(x.ca)}<div class="hd">thanh toán</div></span><span class="r h">${T(x.sv)}<div class="hd">tiền gửi</div></span><span class="r tt">${T(x.t)} tỷ<div class="hd">${pc(x.t)}</div></span><span class="r h ${d>0?"up":d<0?"dn":"z"}">${d==null?"":d===0?"–":S(d)}</span></summary><div class="acc"><table><thead><tr><th>Mã tài khoản</th><th>Tên</th><th>Loại</th><th class="r">Số dư</th></tr></thead><tbody>`+
   rs.map(r=>`<tr><td>${r.code}</td><td>${r.name}</td><td class="tg">${isSv(r)?"Tiền gửi":"Thanh toán"}</td><td class="r ${r.balance?"":"z"}">${F(r.balance)}</td></tr>`).join("")+`</tbody></table></div></details>`});
  $("list").innerHTML=h||'<p class="lab">Không có tài khoản nào khớp.</p>';
  const fx=rows.filter(r=>!isVnd(r)&&r.balance>0).length;$("note").textContent=fx?`Có ${fx} tài khoản ngoại tệ có số dư, chưa cộng vào tổng VND.`:""}

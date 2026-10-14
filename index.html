@@ -84,7 +84,10 @@ addEventListener("unhandledrejection",e=>{const x=$("err");x.hidden=false;x.text
 const F=n=>n.toLocaleString("vi-VN"),T=n=>(n/1e9).toLocaleString("vi-VN",{maximumFractionDigits:2}),S=n=>(n>0?"+":"")+T(n);
 const PAL=["#1d5fd1","#0d9488","#d98a06","#7c3aed","#d6336c","#2f9e44","#0891b2","#9333ea","#64748b"];
 const isSv=r=>/saving/i.test(r.type),isVnd=r=>!/USD|EUR/i.test(r.name||"");
-const RW=j=>(j.rows.deps=j.deposits||[],j.rows);
+const RW=j=>(j.rows.deps=j.deposits||[],j.rows.at=j.exportedAt||"",j.rows);
+// Giờ lấy số dư (extension ghi exportedAt lúc xuất file), hiển thị theo giờ máy đang xem
+const TM=d=>{const a=DAYS[d]&&DAYS[d].at;if(!a)return"";const t=new Date(a);return isNaN(t)?"":t.toLocaleTimeString("vi-VN",{hour:"2-digit",minute:"2-digit",hour12:false})};
+const DT=d=>d+(TM(d)?" · "+TM(d):"");
 let SEL=null,DAYS={},ENC={},PW="",SRC="",LOCAL=null,SIG="";
 try{PW=sessionStorage.getItem("pw")||""}catch(e){}
 const ymd=d=>d.replaceAll("-",""),unb64=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
@@ -144,20 +147,20 @@ async function boot(){
 // ===== Hiển thị =====
 const sums=rows=>{const g={};rows.filter(isVnd).forEach(r=>{const x=g[r.bank]=g[r.bank]||{b:r.bank,ca:0,sv:0};x[isSv(r)?"sv":"ca"]+=r.balance});return g};
 const tot=g=>Object.values(g).reduce((s,x)=>s+x.ca+x.sv,0);
-function init(){const ds=Object.keys(DAYS).sort().reverse();$("dt").innerHTML=ds.map(d=>`<option>${d}</option>`).join("");$("dt").hidden=$("cmp").hidden=!ds.length;render()}
+function init(){const ds=Object.keys(DAYS).sort().reverse();$("dt").innerHTML=ds.map(d=>`<option value="${d}">${DT(d)}</option>`).join("");$("dt").hidden=$("cmp").hidden=!ds.length;render()}
 function render(){
  const ds=Object.keys(DAYS).sort();
  if(!ds.length){$("big").textContent="–";$("strip").innerHTML=$("chips").innerHTML=$("stats").innerHTML=$("list").innerHTML=$("trend").innerHTML="";return}
  const cur=$("dt").value||ds[ds.length-1],i=ds.indexOf(cur),cv=$("cmp").value,prev=cv&&cv!==cur&&DAYS[cv]?cv:(i>0?ds[i-1]:null);
- $("cmp").innerHTML='<option value="">So với: ngày trước</option>'+ds.filter(d=>d!==cur).reverse().map(d=>`<option value="${d}" ${d===cv?"selected":""}>So với ${d}</option>`).join("");
+ $("cmp").innerHTML='<option value="">So với: ngày trước</option>'+ds.filter(d=>d!==cur).reverse().map(d=>`<option value="${d}" ${d===cv?"selected":""}>So với ${DT(d)}</option>`).join("");
  const rows=DAYS[cur],g=sums(rows),pg=prev?sums(DAYS[prev]):null,all=new Set();
  ds.forEach(d=>DAYS[d].forEach(r=>all.add(r.bank)));const col=b=>PAL[[...all].sort().indexOf(b)%PAL.length];
  const banks=Object.values(g).map(x=>({...x,t:x.ca+x.sv,rows:rows.filter(r=>r.bank===x.b)})).sort((a,b)=>b.t-a.t);
  const total=banks.reduce((s,x)=>s+x.t,0),ca=banks.reduce((s,x)=>s+x.ca,0),sv=banks.reduce((s,x)=>s+x.sv,0),pt=pg?tot(pg):null;
  const pc=n=>total?(n/total*100).toFixed(1).replace(".",",")+"%":"0%";
- $("meta").textContent=`Số dư ngày ${cur.split("-").reverse().join("/")} · ${banks.length} ngân hàng · ${rows.length} tài khoản`+(SRC?" · "+SRC:"");
+ $("meta").textContent=`Số dư ngày ${cur.split("-").reverse().join("/")}${TM(cur)?" lúc "+TM(cur):""} · ${banks.length} ngân hàng · ${rows.length} tài khoản`+(SRC?" · "+SRC:"");
  $("big").innerHTML=T(total)+"<small>tỷ đồng</small>";
- $("dl").innerHTML=F(total)+" đ"+(pt==null?"":` · <span class="${total>=pt?"up":"dn"}">${S(total-pt)} tỷ</span> so với ${prev.split("-").reverse().join("/")}`);
+ $("dl").innerHTML=F(total)+" đ"+(pt==null?"":` · <span class="${total>=pt?"up":"dn"}">${S(total-pt)} tỷ</span> so với ${prev.split("-").reverse().join("/")}${TM(prev)?" lúc "+TM(prev):""}`);
  $("strip").innerHTML=banks.map(x=>`<div class="seg" style="flex:${Math.max(x.t,1)};--c:${col(x.b)}" title="${x.b}: ${T(x.t)} tỷ"><i style="flex:${x.ca}"></i><b style="flex:${x.sv}"></b></div>`).join("");
  $("chips").innerHTML=banks.map(x=>`<span class="chip${SEL===x.b?" on":""}" data-b="${x.b}" title="Bấm để xem biến động riêng ngân hàng này" style="--c:${col(x.b)}">${x.b}<em>${T(x.t)} tỷ · ${pc(x.t)}</em></span>`).join("");
  $("stats").innerHTML=[["Tài khoản thanh toán",T(ca)+" tỷ",pc(ca)],["Tiền gửi / Saving",T(sv)+" tỷ",pc(sv)],["Tài khoản có số dư",rows.filter(r=>r.balance>0).length,"trên "+rows.length+" tài khoản"],["Ngân hàng lớn nhất",banks[0].b,pc(banks[0].t)+" tổng tiền"]].map(a=>`<div><span class="lab">${a[0]}</span><b>${a[1]}</b><span class="lab">${a[2]}</span></div>`).join("");

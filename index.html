@@ -67,6 +67,8 @@ td.r,th.r{text-align:right}.z{color:var(--mu)}
 <p id="note"></p></div>
 <script>
 const DIR="DATA",$=id=>document.getElementById(id);
+addEventListener("error",e=>{const x=$("err");x.hidden=false;x.textContent="Lỗi trang: "+e.message});
+addEventListener("unhandledrejection",e=>{const x=$("err");x.hidden=false;x.textContent="Lỗi trang: "+(e.reason&&e.reason.message||e.reason)});
 const F=n=>n.toLocaleString("vi-VN"),T=n=>(n/1e9).toLocaleString("vi-VN",{maximumFractionDigits:2}),S=n=>(n>0?"+":"")+T(n);
 const PAL=["#1d5fd1","#0d9488","#d98a06","#7c3aed","#d6336c","#2f9e44","#0891b2","#9333ea","#64748b"];
 const isSv=r=>/saving/i.test(r.type),isVnd=r=>!/USD|EUR/i.test(r.name||"");
@@ -108,13 +110,18 @@ $("pick").onclick=async()=>{try{const h=await showDirectoryPicker({id:"sodu-data
 $("grant").onclick=async()=>{try{if(await LOCAL.requestPermission({mode:"read"})==="granted"){$("grant").hidden=true;await loadLocal(LOCAL)}}catch(e){alert(e.message)}};
 setInterval(async()=>{if(!LOCAL)return;try{if(await LOCAL.queryPermission({mode:"read"})!=="granted")return;const r=await readFolder(LOCAL);if(r.sig!==SIG){SIG=r.sig;ENC=r.enc;await finish(r.plain)}}catch(e){}},20000);
 // Đọc từ web (GitHub Pages): balance_YYYYMMDD.json hoặc balance_YYYYMMDD.enc.json trong thư mục DATA
-async function loadRemote(){const plain={},t=new Date(),dates=[];
- for(let i=0;i<90;i++){const d=new Date(t-i*864e5);dates.push(d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"))}
- await Promise.all(dates.map(async d=>{
-  try{const j=await getJson(DIR+"/balance_"+ymd(d)+".json");if(j.rows){plain[j.date||d]=j.rows;return}}catch(e){}
-  try{ENC[d]=await getJson(DIR+"/balance_"+ymd(d)+".enc.json")}catch(e){}}));
- if(!Object.keys(ENC).length&&!Object.keys(plain).length){const e=$("err");
-  e.innerHTML="Không tìm thấy file dữ liệu ở <code>"+new URL(DIR+"/",location.href).href+"</code>. Kiểm tra thư mục <b>"+DIR+"</b> trên GitHub có file <b>balance_YYYYMMDD.json</b> (đúng chữ hoa/thường) và chờ 1–2 phút sau khi push.";
+async function loadRemote(){const plain={},info=[],owner=location.hostname.split(".")[0],repo=location.pathname.split("/")[1]||"";let files=[],ok=0;
+ try{const l=await getJson("https://api.github.com/repos/"+owner+"/"+repo+"/contents/"+DIR);
+  files=l.filter(x=>/^balance_\d{8}.*\.json$/i.test(x.name)).map(x=>({name:x.name,url:x.download_url}))}catch(e){info.push("không đọc được danh sách thư mục qua GitHub API")}
+ if(!files.length){const t=new Date();for(let i=0;i<90;i++){const d=new Date(t-i*864e5),s=d.getFullYear()+String(d.getMonth()+1).padStart(2,"0")+String(d.getDate()).padStart(2,"0");
+  files.push({name:"balance_"+s+".json",probe:1},{name:"balance_"+s+".enc.json",probe:1})}}
+ await Promise.all(files.map(async f=>{let j=null;
+  for(const u of [f.url,DIR+"/"+f.name]){if(!u)continue;try{j=await getJson(u);break}catch(e){}}
+  if(!j){if(!f.probe)info.push(f.name+": không tải được");return}
+  const d=f.name.match(/\d{8}/)[0].replace(/(\d{4})(\d{2})(\d{2})/,"$1-$2-$3");
+  if(j.rows){plain[j.date||d]=j.rows;ok++}else if(j.iv&&j.data){ENC[d]=j;ok++}else info.push(f.name+": nội dung không đúng định dạng (cần date và rows)")}));
+ if(!ok){const e=$("err");
+  e.innerHTML="Không đọc được file dữ liệu trong thư mục <b>"+DIR+"</b> của <code>"+owner+"/"+repo+"</code>."+(info.length?"<br>Chi tiết: "+info.join("; "):"")+"<br>Kiểm tra repo là <b>Public</b>, file đúng tên <b>balance_YYYYMMDD.json</b>, rồi bấm Ctrl+F5.";
   e.hidden=false;init();return}
  SRC="GitHub";await finish(plain)}
 async function boot(){
